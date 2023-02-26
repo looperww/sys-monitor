@@ -1,21 +1,27 @@
 # sys-monitor
-#### A light weight system monitoring tool for Libreelec which lets you to monitor the system status without using SSH and CLI.
+### A light-weighted system monitoring tool for Libreelec.
+#### The goal is to monitor the Libreelec server status in only one clean interface without using SSH and CLI. Make the monitoring efficient and effortless.
+
+Currently only the backend API is working. Frontend development is in progress. Feel free to participate.
 
 The backend API returns the information of **cpu usage**, **cpu temperature**, **memory usage**, **disk usage**, **network usage** and **docker containers status**.
 
+### How to use:
 
-Build the docker image:
+1. Clone all the files into a folder on Libreelec.
+
+2. Build the docker image:
 
 `docker build -t sys-monitor .`
 
-Run the docker container:
+3. Run the docker container:
 
-    docker run -d \
-        --privileged \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -p 8000:8000 \
-        sys-monitor
+        docker run -d \
+            --privileged \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -p 8000:8000 \
+            sys-monitor
 
-Go to http://{IP_ADRESS}:8000/status to see the json data.
+4. Go to http://{IP_ADRESS}:8000/status to see the json data.
 
-**Frontend development is in progress.**
+**To Do: develop a frontend page to display those json data in beautiful charts/tables and fetch the data in realtime using websocket**
