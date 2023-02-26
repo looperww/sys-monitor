@@ -1,5 +1,7 @@
 import psutil
 from flask import Flask, jsonify
+import subprocess
+
 
 app = Flask(__name__)
 
@@ -10,7 +12,10 @@ def cpu_usage():
 
 @app.route('/cpu_temp')
 def cpu_temperature():
-    temperature = psutil.sensors_temperatures()['coretemp'][0].current
+    try:
+        temperature = psutil.sensors_temperatures()['coretemp'][0].current
+    except KeyError:
+        temperature = 'N/A'
     return jsonify(temperature=temperature)
 
 @app.route('/gpu')
@@ -35,8 +40,11 @@ def network_usage():
 
 @app.route('/docker')
 def docker_status():
-    docker_output = subprocess.check_output(['docker', 'ps']).decode()
-    return jsonify(docker_status=docker_output)
+    try:
+        output = subprocess.check_output(['docker', 'ps']).decode('utf-8')
+        return jsonify(docker_ps=output.strip())
+    except Exception as e:
+        return jsonify(error=str(e))
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
