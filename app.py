@@ -39,4 +39,4 @@ def docker_status():
     return jsonify(docker_status=docker_output)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8000)
