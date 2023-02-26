@@ -133,7 +133,7 @@ def docker_status():
             }
             containers.append(container)
 
-        return jsonify(containers[0])
+        return jsonify(containers)
     except Exception as e:
         return jsonify(error=str(e))
 
