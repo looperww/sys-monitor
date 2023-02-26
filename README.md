@@ -1,5 +1,5 @@
 # sys-monitor
-###### A light weight system monitoring tool for Libreelec which lets you to monitor the system status without using SSH and CLI.
+#### A light weight system monitoring tool for Libreelec which lets you to monitor the system status without using SSH and CLI.
 
 The backend API returns the information of **cpu usage**, **cpu temperature**, **memory usage**, **disk usage**, **network usage** and **docker containers status**.
 
