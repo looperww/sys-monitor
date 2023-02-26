@@ -22,6 +22,6 @@ The backend API returns the information of **cpu usage**, **cpu temperature**, *
             -p 8000:8000 \
             sys-monitor
 
-4. Go to http://{IP_ADRESS}:8000/status to see the json data.
+4. Go to `http://{IP_ADRESS}:8000/status` to see the json data.
 
 **To Do: develop a frontend page to display those json data in beautiful charts/tables and fetch the data in realtime using websocket**
