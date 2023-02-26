@@ -1,5 +1,5 @@
 import psutil
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 import subprocess
 import time
 import re
@@ -31,89 +31,7 @@ def get_cpu_temp():
     except Exception:
         return None
 
-@app.route('/cpu')
-def cpu():
-    # Get overall CPU usage percentage
-    usage_percent = psutil.cpu_percent()
-
-    # Get CPU usage percentage for each core
-    usage_percent_per_cpu = psutil.cpu_percent(percpu=True)
-
-    #CPU clock
-    try:
-        freq = psutil.cpu_freq()
-        cpu_clock = round(freq.current / 1000, 2)
-    except Exception:
-        cpu_clock = "CPU clock speed not available."
-
-    # Return a JSON response containing both values
-    return jsonify({
-        "usage_percent_overall": usage_percent,
-        "usage_percent_per_cpu": usage_percent_per_cpu,
-        "clock_speed": f"{cpu_clock} GHz"
-    })
-
-@app.route('/cpu_temp')
-def cpu_temp():
-    temp = get_cpu_temp()
-    if temp is not None:
-        return jsonify({'temperature': round(temp, 1)})
-    else:
-        return jsonify({'error': 'CPU temperature not available.'}), 500
-
-
-@app.route('/memory')
-def memory_usage():
-    mem = psutil.virtual_memory()
-    mem_total_gb = round(mem.total / (1024 ** 3), 2)
-    mem_used_gb = round(mem.used / (1024 ** 3), 2)
-    percent_mem = mem.percent
-    return jsonify({
-        "total_memory": mem_total_gb,
-        "used_memory": mem_used_gb,
-        "percent_memory": percent_mem})
-
-@app.route('/disk')
-def disk_usage():
-    disk = psutil.disk_usage('/')
-    disk_total_gb = round(disk.total / (1024 ** 3), 2)
-    disk_used_gb = round(disk.used / (1024 ** 3), 2)
-    disk_free_gb = round(disk.free / (1024 ** 3), 2)
-    percent_disk = disk.percent
-    return jsonify({
-        "total_disk": disk_total_gb,
-        "used_disk": disk_used_gb,
-        "percent_disk": percent_disk,
-        "free_disk": disk_free_gb
-    })
-
-@app.route('/network')
-def network_usage():
-    network = psutil.net_io_counters()
-    sent1 = network.bytes_sent
-    recv1 = network.bytes_recv
-
-    time.sleep(1)
-
-    network = psutil.net_io_counters()
-    sent2 = network.bytes_sent
-    recv2 = network.bytes_recv
-
-    bytes_sent_rate = sent2 - sent1
-    bytes_recv_rate = recv2 - recv1
-
-    bytes_sent = round(sent2 / (1024 * 1024), 2)
-    bytes_recv = round(recv2 / (1024 * 1024), 2)
-
-    return jsonify({
-        "Send rate": round(bytes_sent_rate / 1_000_000, 2), #MB/s
-        "Receive rate": round(bytes_recv_rate / 1_000_000, 2), #MB/s
-        "Date sent": bytes_sent, #MB
-        "Data received": bytes_recv #MB
-
-    })
-
-@app.route('/docker')
+# Get docker info
 def docker_status():
     try:
         # Get output from `docker ps` command
@@ -131,9 +49,105 @@ def docker_status():
             }
             containers.append(container)
 
-        return jsonify(containers)
+        return containers
     except Exception as e:
-        return jsonify(error=str(e))
+        return None
+
+
+#@app.route("/")
+#def index():
+    #return render_template("index.html")
+
+
+@app.route('/status')
+def cpu():
+    # Get overall CPU usage percentage
+    usage_percent = psutil.cpu_percent()
+    # Get CPU usage percentage for each core
+    usage_percent_per_cpu = psutil.cpu_percent(percpu=True)
+    # CPU clock
+    try:
+        freq = psutil.cpu_freq()
+        cpu_clock = round(freq.current / 1000, 2)
+    except Exception:
+        cpu_clock = "CPU clock speed not available."
+
+    # Get memory data
+    mem = psutil.virtual_memory()
+    mem_total_gb = round(mem.total / (1024 ** 3), 2)
+    mem_used_gb = round(mem.used / (1024 ** 3), 2)
+    percent_mem = mem.percent
+
+    # Get temperature
+    temp = get_cpu_temp()
+    if temp is not None:
+        temp = round(temp, 1)
+    else:
+        temp = 'error: CPU temperature not available.'
+
+    # Get disk data
+    disk = psutil.disk_usage('/')
+    disk_total_gb = round(disk.total / (1024 ** 3), 2)
+    disk_used_gb = round(disk.used / (1024 ** 3), 2)
+    disk_free_gb = round(disk.free / (1024 ** 3), 2)
+    percent_disk = disk.percent
+
+    # Get network data
+    network = psutil.net_io_counters()
+    sent1 = network.bytes_sent
+    recv1 = network.bytes_recv
+
+    time.sleep(1)
+
+    network = psutil.net_io_counters()
+    sent2 = network.bytes_sent
+    recv2 = network.bytes_recv
+
+    bytes_sent_rate = sent2 - sent1
+    bytes_recv_rate = recv2 - recv1
+
+    bytes_sent = round(sent2 / (1024 * 1024), 2)
+    bytes_recv = round(recv2 / (1024 * 1024), 2)
+
+    # Get docker info
+    containers = docker_status()
+    if containers is not None:
+        pass
+    else:
+        containers = {"error":"something wrong"}
+
+
+
+    # Return a JSON response containing
+    return jsonify({
+        "cpu_usage":{
+            "usage_percent_overall": usage_percent,
+            "usage_percent_per_cpu": usage_percent_per_cpu,
+            "clock_speed": f"{cpu_clock} GHz"},
+        "memory":{
+            "total_memory": mem_total_gb,
+            "used_memory": mem_used_gb,
+            "percent_memory": percent_mem},
+        "cpu_temp":{
+            'temperature': temp
+        },
+        "disk":{
+            "total_disk": disk_total_gb,
+            "used_disk": disk_used_gb,
+            "percent_disk": percent_disk,
+            "free_disk": disk_free_gb
+        },
+        "network":{
+            "Send rate": round(bytes_sent_rate / 1_000_000, 2), #MB/s
+            "Receive rate": round(bytes_recv_rate / 1_000_000, 2), #MB/s
+            "Date sent": bytes_sent, #MB
+            "Data received": bytes_recv #MB
+        },
+        "docker":
+            containers
+
+    })
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
