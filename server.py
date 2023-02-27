@@ -3,9 +3,11 @@ from flask import Flask, jsonify, render_template
 import subprocess
 import time
 import re
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}}, headers=['Content-Type', 'Access-Control-Allow-Origin'])
 
 # CPU temperature monitoring function
 def get_cpu_temp():
@@ -54,9 +56,9 @@ def docker_status():
         return None
 
 
-#@app.route("/")
-#def index():
-    #return render_template("index.html")
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
 @app.route('/status')
