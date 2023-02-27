@@ -2,7 +2,7 @@
 ### A light-weighted system monitoring tool for Libreelec.
 #### The goal is to monitor the Libreelec server status in only one clean interface without using SSH and CLI. Make the monitoring efficient and effortless.
 
-Currently only the backend API is working. Frontend development is in progress. Feel free to participate.
+Currently only the backend API is working. Frontend development is in progress and the index page may not working properly. Feel free to participate.
 
 The backend API returns the information of **cpu usage**, **cpu temperature**, **memory usage**, **disk usage**, **network usage** and **docker containers status**.
 
