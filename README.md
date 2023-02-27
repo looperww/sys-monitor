@@ -19,6 +19,7 @@ The backend API returns the information of **cpu usage**, **cpu temperature**, *
         docker run -d \
             --privileged \
             -v /var/run/docker.sock:/var/run/docker.sock \
+            -v /proc:/host/proc:ro \
             -p 8000:8000 \
             sys-monitor
 
