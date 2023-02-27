@@ -47,13 +47,31 @@ def docker_status():
             container = {
                 'name': fields[-1],
                 'status': fields[4],
-                'image': fields[1],
             }
             containers.append(container)
 
         return containers
     except Exception as e:
         return None
+
+
+def get_disks():
+    disks = []
+    mount_points = ["/", "/var/media/"]
+    for mount_point in mount_points:
+        try:
+            usage = psutil.disk_usage(mount_point)
+            disk = {
+            'used': round(usage.used / (1024.0 ** 3), 2),
+            'free': round(usage.free / (1024.0 ** 3), 2),
+            'total': round(usage.total / (1024.0 ** 3), 2),
+            'percentage': usage.percent
+            }
+            disks.append({mount_point: disk})
+
+        except Exception as e:
+            pass
+    return disks
 
 
 @app.route("/")
@@ -88,11 +106,7 @@ def cpu():
         temp = 'error: CPU temperature not available.'
 
     # Get disk data
-    disk = psutil.disk_usage('/')
-    disk_total_gb = round(disk.total / (1024 ** 3), 2)
-    disk_used_gb = round(disk.used / (1024 ** 3), 2)
-    disk_free_gb = round(disk.free / (1024 ** 3), 2)
-    percent_disk = disk.percent
+    disks = get_disks()
 
     # Get network data
     network = psutil.net_io_counters()
@@ -122,23 +136,21 @@ def cpu():
 
     # Return a JSON response containing
     return jsonify({
-        "cpu_usage":{
+        "cpu":{
             "usage_percent_overall": usage_percent,
             "usage_percent_per_cpu": usage_percent_per_cpu,
-            "clock_speed": f"{cpu_clock} GHz"},
+            "clock_speed": f"{cpu_clock} GHz",
+            'temperature': temp
+            },
         "memory":{
             "total_memory": mem_total_gb,
             "used_memory": mem_used_gb,
-            "percent_memory": percent_mem},
-        "cpu_temp":{
-            'temperature': temp
-        },
-        "disk":{
-            "total_disk": disk_total_gb,
-            "used_disk": disk_used_gb,
-            "percent_disk": percent_disk,
-            "free_disk": disk_free_gb
-        },
+            "percent_memory": percent_mem
+            },
+
+        "disk":
+            disks
+        ,
         "network":{
             "Send rate": round(bytes_sent_rate / 1_000_000, 2), #MB/s
             "Receive rate": round(bytes_recv_rate / 1_000_000, 2), #MB/s
@@ -147,7 +159,6 @@ def cpu():
         },
         "docker":
             containers
-
     })
 
 
