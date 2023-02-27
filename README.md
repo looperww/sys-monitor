@@ -19,11 +19,8 @@ The backend API returns the information of **cpu usage**, **cpu temperature**, *
         docker run -d \
             --name sys-minitor \
             --net=host \
-            --privileged \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v /proc:/host/proc:ro \
-            -v /var/media:/var/media:ro \
-            -p 8000:8000 \
             sys-monitor
 
 4. Go to `http://{IP_ADRESS}:8000/status` to see the json data.
