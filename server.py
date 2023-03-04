@@ -57,7 +57,7 @@ def docker_status():
 
 def get_disks():
     disks = []
-    mount_points = ["/", "/var/media/"]
+    mount_points = ["/", "/dev/sda2"]
     for mount_point in mount_points:
         try:
             usage = psutil.disk_usage(mount_point)
@@ -83,8 +83,6 @@ def index():
 def cpu():
     # Get overall CPU usage percentage
     usage_percent = psutil.cpu_percent()
-    # Get CPU usage percentage for each core
-    usage_percent_per_cpu = psutil.cpu_percent(percpu=True)
     # CPU clock
     try:
         freq = psutil.cpu_freq()
@@ -122,8 +120,8 @@ def cpu():
     bytes_sent_rate = sent2 - sent1
     bytes_recv_rate = recv2 - recv1
 
-    bytes_sent = round(sent2 / (1024 * 1024), 2)
-    bytes_recv = round(recv2 / (1024 * 1024), 2)
+    bytes_sent = round(sent2 / (1024 ** 3), 2)
+    bytes_recv = round(recv2 / (1024 ** 3), 2)
 
     # Get docker info
     containers = docker_status()
@@ -138,7 +136,6 @@ def cpu():
     return jsonify({
         "cpu":{
             "usage_percent_overall": usage_percent,
-            "usage_percent_per_cpu": usage_percent_per_cpu,
             "clock_speed": f"{cpu_clock} GHz",
             'temperature': temp
             },
@@ -152,10 +149,10 @@ def cpu():
             disks
         ,
         "network":{
-            "Send rate": round(bytes_sent_rate / 1_000_000, 2), #MB/s
-            "Receive rate": round(bytes_recv_rate / 1_000_000, 2), #MB/s
-            "Date sent": bytes_sent, #MB
-            "Data received": bytes_recv #MB
+            "send_rate": round(bytes_sent_rate / 1_000_000, 2), #MB/s
+            "receive_rate": round(bytes_recv_rate / 1_000_000, 2), #MB/s
+            "sent": bytes_sent, #GB
+            "received": bytes_recv #GB
         },
         "docker":
             containers
